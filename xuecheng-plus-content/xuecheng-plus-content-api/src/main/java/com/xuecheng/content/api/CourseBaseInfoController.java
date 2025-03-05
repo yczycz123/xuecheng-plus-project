@@ -16,10 +16,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author Mr.M
+ * @author ycz
  * @version 1.0
  * @description TODO
- * @date 2023/2/11 15:44
+ * @date 2025/3/5
  */
 @Api(value = "课程信息管理接口",tags = "课程信息管理接口")
 @RestController

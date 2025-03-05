@@ -7,7 +7,7 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * @author Mr.M
+ * @author ycz
  * @version 1.0
  * @description 分页查询结果模型类
  * @date 2025/3/5
