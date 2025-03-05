@@ -14,7 +14,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
  * 课程-教师关系表
  * </p>
  *
- * @author itcast
+ * @author ycz
  */
 @Data
 @TableName("course_teacher")

@@ -12,7 +12,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
  * 课程发布
  * </p>
  *
- * @author itcast
+ * @author ycz
  */
 @Data
 @TableName("course_publish_pre")

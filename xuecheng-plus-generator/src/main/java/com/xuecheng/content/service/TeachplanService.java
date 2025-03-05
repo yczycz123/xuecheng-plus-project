@@ -8,7 +8,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * 课程计划 服务类
  * </p>
  *
- * @author itcast
+ * @author ycz
  * @since 2025-03-04
  */
 public interface TeachplanService extends IService<Teachplan> {
