@@ -21,7 +21,7 @@ import java.util.List;
 /**
  * @author ycz
  * @version 1.0
- * @description TODO
+ * @description 课程信息查询
  * @date 2025/3/5
  */
 
