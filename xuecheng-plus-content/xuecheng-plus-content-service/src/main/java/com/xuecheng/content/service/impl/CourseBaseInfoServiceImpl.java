@@ -3,6 +3,7 @@ package com.xuecheng.content.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.xuecheng.base.exception.XueChengPlusException;
 import com.xuecheng.base.model.PageParams;
 import com.xuecheng.base.model.PageResult;
 import com.xuecheng.content.mapper.CourseBaseMapper;
@@ -75,7 +76,8 @@ public class CourseBaseInfoServiceImpl implements CourseBaseInfoService {
 
         //参数合法性校验
         if (StringUtils.isBlank(dto.getName())) {
-            throw new RuntimeException("课程名称为空");
+            //throw new RuntimeException("课程名称为空");
+            XueChengPlusException.cast("课程名称为空");
         }
 
         if (StringUtils.isBlank(dto.getMt())) {
@@ -156,7 +158,8 @@ public class CourseBaseInfoServiceImpl implements CourseBaseInfoService {
         if(charge.equals("201001")){
             //如果课程设置的为收费，但是没有填写费用或者费用小于0，抛异常
             if(courseMarketNew.getPrice() == null || courseMarketNew.getPrice().floatValue()<=0){
-                throw new RuntimeException("课程为收费价格不能为空且必须大于0");
+                //throw new RuntimeException("课程为收费价格不能为空且必须大于0");
+                XueChengPlusException.cast("课程为收费价格不能为空且必须大于0");
             }
         }
         //根据id从数据库课程营销表查询该课程信息，如果为空，则添加，不然就更新数据

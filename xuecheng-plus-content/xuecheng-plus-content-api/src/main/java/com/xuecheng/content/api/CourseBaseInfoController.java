@@ -33,6 +33,8 @@ public class CourseBaseInfoController {
     @Autowired
     CourseBaseInfoService courseBaseInfoService;
 
+
+
     @ApiOperation("课程查询接口")
     @PostMapping("/course/list")
     public PageResult<CourseBase> list(PageParams pageParams, @RequestBody(required = false) QueryCourseParamsDto queryCourseParamsDto) {
@@ -43,6 +45,9 @@ public class CourseBaseInfoController {
     @ApiOperation("新增课程基础信息")
     @PostMapping("/course")
     public CourseBaseInfoDto createCourseBase(@RequestBody AddCourseDto addCourseDto){
-        return null;
+        //机构id，由于认证系统没有上线暂时硬编码
+        Long companyId = 1232141425L;
+        CourseBaseInfoDto courseBase = courseBaseInfoService.createCourseBase(companyId, addCourseDto);
+        return courseBase;
     }
 }
