@@ -14,6 +14,9 @@ import java.time.LocalDateTime;
  * @author ycz
  */
 @Data
+
+
+//指定数据库表名，这让MyBatis-Plus将Teachplan实体类与数据库中的teachplan表对应上
 @TableName("teachplan")
 public class Teachplan implements Serializable {
 
