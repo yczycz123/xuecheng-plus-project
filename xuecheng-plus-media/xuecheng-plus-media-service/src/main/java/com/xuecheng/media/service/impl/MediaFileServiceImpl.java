@@ -48,6 +48,9 @@ public class MediaFileServiceImpl implements MediaFileService {
     @Autowired
     MinioClient minioClient;
 
+    @Autowired
+    MediaFileService currentProxy;
+
     //存储普通文件
     @Value("${minio.bucket.files}")
     private String bucket_Files;
@@ -145,6 +148,7 @@ public class MediaFileServiceImpl implements MediaFileService {
         }
     }
 
+    @Transactional
     public MediaFiles addMediaFilesToDb(Long companyId, String fileMd5, UploadFileParamsDto uploadFileParamsDto, String bucket, String objectName) {
         //从数据库查询文件
         MediaFiles mediaFiles = mediaFilesMapper.selectById(fileMd5);
@@ -182,7 +186,7 @@ public class MediaFileServiceImpl implements MediaFileService {
 
     }
 
-    @Transactional
+
     @Override
     public UploadFileResultDto uploadFile(Long companyId, UploadFileParamsDto uploadFileParamsDto, String localFilePath) {
         File file = new File(localFilePath);
@@ -211,7 +215,7 @@ public class MediaFileServiceImpl implements MediaFileService {
         //文件大小
         uploadFileParamsDto.setFileSize(file.length());
         //将文件信息存储到数据库
-        MediaFiles mediaFiles = addMediaFilesToDb(companyId, fileMd5, uploadFileParamsDto, bucket_Files, objectName);
+        MediaFiles mediaFiles = currentProxy.addMediaFilesToDb(companyId, fileMd5, uploadFileParamsDto, bucket_Files, objectName);
         if (mediaFiles==null){
             XueChengPlusException.cast("文件上传后保存信息失败");
         }
