@@ -116,8 +116,7 @@ public class MediaFileServiceImpl implements MediaFileService {
      * @param objectName    对象名称
      * @return void
      * @description 将文件写入minIO
-     * @author Mr.M
-     * @date 2022/10/12 21:22
+
      */
     public boolean addMediaFilesToMinIO(String localFilePath, String mimeType, String bucket, String objectName) {
         try {
@@ -216,7 +215,9 @@ public class MediaFileServiceImpl implements MediaFileService {
             MediaProcess mediaProcess = new MediaProcess();
             BeanUtils.copyProperties(mediaFiles, mediaProcess);
             mediaProcess.setStatus("1");//未处理
+            mediaProcess.setCreateDate(LocalDateTime.now());
             mediaProcess.setFailCount(0);//失败次数默认为0
+            mediaProcess.setUrl(null);
             mediaProcessMapper.insert(mediaProcess);
         }
     }
