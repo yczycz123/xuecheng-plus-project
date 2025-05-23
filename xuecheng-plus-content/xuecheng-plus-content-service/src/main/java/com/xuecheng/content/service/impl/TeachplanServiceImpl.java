@@ -2,23 +2,33 @@ package com.xuecheng.content.service.impl;
 
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.xuecheng.base.exception.XueChengPlusException;
 import com.xuecheng.content.mapper.TeachplanMapper;
+import com.xuecheng.content.mapper.TeachplanMediaMapper;
+import com.xuecheng.content.model.dto.BindTeachplanMediaDto;
 import com.xuecheng.content.model.dto.SaveTeachplanDto;
 import com.xuecheng.content.model.dto.TeachplanDto;
 import com.xuecheng.content.model.po.Teachplan;
+import com.xuecheng.content.model.po.TeachplanMedia;
 import com.xuecheng.content.service.TeachplanService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 
 @Service
 
 public class TeachplanServiceImpl implements TeachplanService {
+
     @Autowired
     TeachplanMapper teachplanMapper;
+
+    @Autowired
+    TeachplanMediaMapper teachplanMediaMapper;
 
     @Override
     public List<TeachplanDto> findTeachplanTree(long courseId) {
@@ -51,12 +61,55 @@ public class TeachplanServiceImpl implements TeachplanService {
         }
     }
 
+    @Transactional
+    @Override
+    public TeachplanMedia associationMedia(BindTeachplanMediaDto bindTeachplanMediaDto) {
+        // 获取教学计划的ID
+        Long teachplanId = bindTeachplanMediaDto.getTeachplanId();
+
+        // 查询该教学计划信息
+        Teachplan teachplan = teachplanMapper.selectById(teachplanId);
+
+        // 如果教学计划不存在，抛出异常
+        if (teachplan == null) {
+            XueChengPlusException.cast("教学计划不存在");
+        }
+
+        // 获取教学计划的层级
+        Integer grade = teachplan.getGrade();
+
+        // 判断层级是否为2（只允许第二级教学计划绑定媒资文件）
+        if (grade != 2) {
+            XueChengPlusException.cast("只允许第二级教学计划绑定媒资文件");
+        }
+
+        // 获取该教学计划关联的课程ID
+        Long courseId = teachplan.getCourseId();
+
+        // 删除原来该教学计划绑定的媒资文件
+        teachplanMediaMapper.delete(new LambdaQueryWrapper<TeachplanMedia>().eq(TeachplanMedia::getTeachplanId, teachplanId));
+
+        // 创建新的TeachplanMedia对象，并设置其属性
+        TeachplanMedia teachplanMedia = new TeachplanMedia();
+        teachplanMedia.setCourseId(courseId);  // 设置课程ID
+        teachplanMedia.setTeachplanId(teachplanId);  // 设置教学计划ID
+        teachplanMedia.setMediaFilename(bindTeachplanMediaDto.getFileName());  // 设置媒资文件名
+        teachplanMedia.setMediaId(bindTeachplanMediaDto.getMediaId());  // 设置媒资ID
+        teachplanMedia.setCreateDate(LocalDateTime.now());  // 设置创建日期为当前时间
+
+        // 将新的媒资绑定关系插入数据库
+        teachplanMediaMapper.insert(teachplanMedia);
+
+        // 返回新创建的TeachplanMedia对象
+        return teachplanMedia;
+    }
+
 
     /**
-     * @description 获取最新的排序号
-     * @param courseId  课程id
-     * @param parentId  父课程计划id
+     * @param courseId 课程id
+     * @param parentId 父课程计划id
      * @return int 最新排序号
+     * @description 获取最新的排序号
      */
     private int getTeachplanCount(long courseId, long parentId) {
         LambdaQueryWrapper<Teachplan> queryWrapper = new LambdaQueryWrapper<>();
