@@ -4,9 +4,12 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xuecheng.ucenter.mapper.XcUserMapper;
 import com.xuecheng.ucenter.model.dto.AuthParamsDto;
+import com.xuecheng.ucenter.model.dto.XcUserExt;
 import com.xuecheng.ucenter.model.po.XcUser;
+import com.xuecheng.ucenter.service.AuthService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -19,6 +22,11 @@ import org.springframework.stereotype.Component;
 public class UserServiceImpl implements UserDetailsService {
     @Autowired
     XcUserMapper xcUserMapper;
+
+    @Autowired
+    ApplicationContext applicationContext;
+
+
     @Override
     public UserDetails loadUserByUsername(String s) throws UsernameNotFoundException {
         AuthParamsDto authParamsDto = null;
@@ -26,24 +34,40 @@ public class UserServiceImpl implements UserDetailsService {
             //将认证参数转为AuthParamsDto类型
             authParamsDto = JSON.parseObject(s, AuthParamsDto.class);
         } catch (Exception e) {
-            log.info("认证请求不符合项目要求:{}",s);
+            log.info("认证请求不符合项目要求:{}", s);
             throw new RuntimeException("认证请求数据格式不对");
         }
-        //账号
-        String username = authParamsDto.getUsername();
-        //根据username账号查询数据库
-        XcUser xcUser = xcUserMapper.selectOne(new LambdaQueryWrapper<XcUser>().eq(XcUser::getUsername, s));
-        //查询到用户不存在，返回null即可
-        if(xcUser==null){
-            return null;
-        }
-        //如果查到了用户拿到正确的密码，最终封装成一个UserDetails对象给spring security框架返回，由
-        String password = xcUser.getPassword();
-        //权限
-        String[] authorities = {"test"};
-        xcUser.setPassword(null);
-        String userJson = JSON.toJSONString(xcUser);
-        UserDetails userDetails = User.withUsername(userJson).password(password).authorities(authorities).build();
+
+        //拿到认证类型，有password、wx等等
+        String authType = authParamsDto.getAuthType();
+
+        String beanName = authType + "_authservice";
+        AuthService authService = applicationContext.getBean(beanName, AuthService.class);
+
+        //调用统一的execute方法完成认证
+        XcUserExt user = authService.execute(authParamsDto);
+
+        return getUserPrincipal(user);
+    }
+
+
+    /**
+     * @param user 用户id，主键
+     * @return com.xuecheng.ucenter.model.po.XcUser 用户信息
+     * @description 查询用户信息
+     * @author Mr.M
+     * @date 2022/9/29 12:19
+     */
+    public UserDetails getUserPrincipal(XcUserExt user) {
+        //用户权限,如果不加报Cannot pass a null GrantedAuthority collection
+        String[] authorities = {"p1"};
+        String password = user.getPassword();
+        //为了安全在令牌中不放密码
+        user.setPassword(null);
+        //将user对象转json
+        String userString = JSON.toJSONString(user);
+        //创建UserDetails对象
+        UserDetails userDetails = User.withUsername(userString).password(password).authorities(authorities).build();
         return userDetails;
     }
 }
