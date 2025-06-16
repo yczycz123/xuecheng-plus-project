@@ -39,9 +39,18 @@ public class GlobalExceptionHandler {
 
         log.error("【系统异常】{}", e.getMessage(), e);
 
+
+        //专门处理springsecurity爆出的不允许访问异常
+        if(e.getMessage().equals("不允许访问")){
+            return new RestErrorResponse("没有操作此功能的权限");
+        }
+
         return new RestErrorResponse(CommonError.UNKOWN_ERROR.getErrMessage());
 
     }
+
+
+
 
 
     //解析JSR303框架校验抛出的MethodArgumentNotValidException异常
